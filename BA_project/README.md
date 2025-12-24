@@ -13,8 +13,8 @@ A beautiful Netflix-inspired movie recommendation system with built-in A/B testi
 - **Real-time Analytics Dashboard**: Live CTR/CVR metrics with lift analysis
 - **Interactive Demo**: Click movies, rate them, and see metrics update in real-time
 - **Two Recommendation Variants**:
-  - **Control**: Random movie recommendations
-  - **Treatment**: Popularity-based recommendations (by average rating)
+  - **Control**: Matrix Factorization
+  - **Treatment**: LightGCN (Graph Neural Network)
 
 ## Project Structure
 
@@ -95,8 +95,8 @@ Dashboard:      http://localhost:5000/dashboard
 
 - After login, you'll see 12 movie recommendations
 - Recommendations are based on your assigned variant:
-  - **Control**: Random movies
-  - **Treatment**: Popular movies (sorted by rating)
+  - **Control**: Matrix Factorization
+  - **Treatment**: LightGCN
 
 ### 3. Interact with Movies
 
@@ -122,7 +122,7 @@ For complete A/B test methodology, see [docs/AB_Test_Design.md](docs/AB_Test_Des
 | Component | Details |
 |-----------|---------|
 | **Randomization Unit** | User ID (hash-based assignment) |
-| **Variants** | Control (Random) vs Treatment (Popularity-based) |
+| **Variants** | Control (Matrix Factorization) vs Treatment (LightGCN) |
 | **Primary Metrics** | CTR, CVR |
 | **Sample Size** | ~1,500 impressions per variant |
 | **Guardrails** | Response latency, catalog coverage, novelty |

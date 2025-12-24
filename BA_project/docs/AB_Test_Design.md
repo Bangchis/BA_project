@@ -2,15 +2,15 @@
 
 ## Executive Summary
 
-This document outlines the A/B test design for evaluating two recommendation algorithms in a Netflix-style movie recommendation system. The test compares a **Control variant** (random recommendations) against a **Treatment variant** (popularity-based recommendations) to determine which approach yields higher user engagement.
+This document outlines the A/B test design for evaluating two recommendation algorithms in a Netflix-style movie recommendation system. The test compares a **Control variant** (Matrix Factorization) against a **Treatment variant** (LightGCN) to determine which approach yields higher user engagement.
 
 ---
 
 ## 1. Hypothesis
 
-**Null Hypothesis (H0):** Popularity-based recommendations do not improve user engagement metrics (CTR and CVR) compared to random recommendations.
+**Null Hypothesis (H0):** LightGCN does not improve user engagement metrics (CTR and CVR) compared to Matrix Factorization.
 
-**Alternative Hypothesis (H1):** Popularity-based recommendations significantly increase user engagement metrics (CTR and CVR) compared to random recommendations.
+**Alternative Hypothesis (H1):** LightGCN significantly increases user engagement metrics (CTR and CVR) compared to Matrix Factorization.
 
 ---
 
@@ -30,8 +30,8 @@ This document outlines the A/B test design for evaluating two recommendation alg
 
 | Variant | Description | Algorithm |
 |---------|-------------|-----------|
-| **Control** | Baseline recommendations | Random selection of 12 movies from catalog |
-| **Treatment** | Popularity-based recommendations | Top 12 movies ranked by average user rating |
+| **Control** | Matrix Factorization | Collaborative filtering with latent factor models |
+| **Treatment** | LightGCN | Graph Neural Network for recommendations |
 
 ### 2.3 Traffic Allocation
 
@@ -239,10 +239,10 @@ This A/B test uses **demo interactions** rather than real user traffic:
 
 ### 9.2 Simplified Algorithms
 
-- **Control:** Random recommendations (not a realistic baseline)
-- **Treatment:** Simple popularity-based (not personalized)
+- **Control:** Matrix Factorization (simplified implementation)
+- **Treatment:** LightGCN (simplified implementation)
 
-**Implication:** Real-world systems would use more sophisticated algorithms (collaborative filtering, deep learning).
+**Implication:** Real-world systems would use more sophisticated implementations with deep neural networks and graph embeddings.
 
 ### 9.3 Selection Bias
 
@@ -264,14 +264,14 @@ This A/B test uses **demo interactions** rather than real user traffic:
 2. Present findings to stakeholders
 
 3. Decide on next iteration:
-   - If Treatment wins: Consider more sophisticated algorithms (collaborative filtering, LightGCN)
-   - If no effect: Investigate why popularity-based failed
+   - If Treatment wins: Deploy LightGCN to production
+   - If no effect: Investigate hyperparameter tuning or alternative GNN architectures
    - Run follow-up tests with different algorithms
 
 ### 10.2 Future Experiments
 
-- **Personalization:** Test collaborative filtering vs. popularity-based
-- **Diversity:** Test diversity-optimized recommendations vs. pure popularity
+- **Personalization:** Test deeper GNN architectures (NGCF, PinSage)
+- **Diversity:** Test diversity-optimized recommendations vs. pure GNN output
 - **Cold start:** Test strategies for new users with no history
 - **Multi-armed bandit:** Dynamic traffic allocation based on real-time performance
 

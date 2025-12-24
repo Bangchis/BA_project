@@ -29,6 +29,7 @@ def login():
     # Store in session
     session['user_id'] = user_id
     session['variant'] = variant
+    session['rated_movies'] = {}  # Initialize empty ratings dict
 
     return jsonify({
         'success': True,
@@ -42,12 +43,13 @@ def recommendations():
     """Get personalized recommendations based on variant"""
     user_id = session.get('user_id')
     variant = session.get('variant')
+    rated_movies = session.get('rated_movies', {})  # Get rated movies from session
 
     if not user_id or not variant:
         return jsonify({'error': 'Please login first'}), 401
 
-    # Get recommendations based on variant
-    recs = get_recommendations(user_id, variant, n=12)
+    # Get personalized recommendations (filters out rated movies)
+    recs = get_recommendations(user_id, variant, n=12, rated_movies=rated_movies)
 
     # Log impression
     movie_ids = [movie['movieId'] for movie in recs]
@@ -55,7 +57,9 @@ def recommendations():
 
     return jsonify({
         'recommendations': recs,
-        'variant': variant
+        'variant': variant,
+        'personalized': len(rated_movies) > 0,  # Indicate if personalized
+        'num_ratings': len(rated_movies)
     })
 
 
@@ -110,12 +114,20 @@ def rate():
     except (ValueError, TypeError):
         return jsonify({'error': 'Rating must be 1-5'}), 400
 
+    # Store rating in session for personalization
+    if 'rated_movies' not in session:
+        session['rated_movies'] = {}
+    session['rated_movies'][str(movie_id)] = rating
+    session.modified = True  # Mark session as modified
+
     # Log conversion
     log_conversion(user_id, variant, movie_id, rating)
 
     return jsonify({
         'success': True,
-        'message': f'Rated movie {movie_id} with {rating} stars'
+        'message': f'Rated movie {movie_id} with {rating} stars',
+        'should_refresh': True,  # Signal to frontend to refresh recommendations
+        'num_ratings': len(session['rated_movies'])
     })
 
 

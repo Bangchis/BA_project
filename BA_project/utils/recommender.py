@@ -1,7 +1,7 @@
 """
 Mock Recommender Systems
-- Control: Random recommendations
-- Treatment: Popularity-based recommendations
+- Control: Matrix Factorization
+- Treatment: LightGCN
 """
 import random
 import pandas as pd
@@ -189,56 +189,177 @@ class MovieDataset:
 dataset = MovieDataset()
 
 
-def get_control_recommendations(user_id, n=12):
+def extract_genre_preferences(rated_movies_dict):
     """
-    Control: Random recommendations
+    Extract genre preferences from user's rated movies.
 
     Args:
-        user_id: User identifier
-        n: Number of recommendations
+        rated_movies_dict: {movie_id: rating} dictionary
 
     Returns:
-        List of movie dictionaries
+        Dictionary of {genre: preference_score}
     """
-    movies = dataset.get_all_movies()
-    return random.sample(movies, min(n, len(movies)))
+    genre_scores = {}
+
+    if not rated_movies_dict:
+        return genre_scores
+
+    for movie_id, rating in rated_movies_dict.items():
+        movie = dataset.get_movie_by_id(int(movie_id))
+        if not movie:
+            continue
+
+        genres = movie.get('genres', '').split('|')
+
+        # Weight by rating (5★ = 1.0, 1★ = 0.2)
+        weight = float(rating) / 5.0
+
+        for genre in genres:
+            genre = genre.strip()
+            if genre:
+                genre_scores[genre] = genre_scores.get(genre, 0) + weight
+
+    return genre_scores
 
 
-def get_treatment_recommendations(user_id, n=12):
+def score_movie_by_preference(movie, genre_preferences, variant='control'):
     """
-    Treatment: Popularity-based recommendations (by avg_rating)
+    Score a movie based on genre preferences and variant type.
 
     Args:
-        user_id: User identifier
-        n: Number of recommendations
+        movie: Movie dictionary
+        genre_preferences: Genre preference scores from extract_genre_preferences()
+        variant: 'control' or 'treatment'
 
     Returns:
-        List of movie dictionaries
+        Float score (0.0 to 1.0)
     """
-    movies = dataset.movies.copy()
-    # Sort by avg_rating descending
-    if 'avg_rating' in movies.columns:
-        movies = movies.sort_values('avg_rating', ascending=False)
+    if not genre_preferences:
+        # No preferences yet - use default scoring
+        if variant == 'treatment':
+            return movie.get('avg_rating', 3.0) / 5.0
+        else:
+            return random.random()
+
+    # Calculate genre match score
+    genre_match_score = 0
+    movie_genres = movie.get('genres', '').split('|')
+
+    for genre in movie_genres:
+        genre = genre.strip()
+        genre_match_score += genre_preferences.get(genre, 0)
+
+    # Normalize (max score ~5.0 if all genres match highly)
+    genre_match_score = min(genre_match_score / 5.0, 1.0)
+
+    # Combine with popularity
+    popularity_score = movie.get('avg_rating', 3.0) / 5.0
+
+    if variant == 'treatment':
+        # LightGCN: More weight on genre matching (60%) + popularity (40%)
+        return (genre_match_score * 0.6) + (popularity_score * 0.4)
     else:
-        # Fallback to random if no ratings
-        return get_control_recommendations(user_id, n)
-
-    return movies.head(n).to_dict('records')
+        # Matrix Factorization: Less weight on genre matching (30%) + randomness (70%)
+        return (genre_match_score * 0.3) + (random.random() * 0.7)
 
 
-def get_recommendations(user_id, variant, n=12):
+def get_control_recommendations(user_id, n=12, rated_movies=None):
     """
-    Get recommendations based on assigned variant
+    Control: Matrix Factorization (with pseudo-personalization if user has ratings)
+
+    Args:
+        user_id: User identifier
+        n: Number of recommendations
+        rated_movies: Dictionary of {movie_id: rating} for personalization
+
+    Returns:
+        List of movie dictionaries
+    """
+    all_movies = dataset.get_all_movies()
+
+    # Filter out already-rated movies
+    if rated_movies:
+        rated_ids = set(int(mid) for mid in rated_movies.keys())
+        candidates = [m for m in all_movies if m['movieId'] not in rated_ids]
+
+        # Extract genre preferences
+        genre_prefs = extract_genre_preferences(rated_movies)
+
+        # Score movies with slight genre bias
+        for movie in candidates:
+            movie['_score'] = score_movie_by_preference(movie, genre_prefs, variant='control')
+
+        # Sort by score and return top N
+        candidates.sort(key=lambda m: m['_score'], reverse=True)
+        result = candidates[:n]
+
+        # Clean up temporary score field
+        for m in result:
+            m.pop('_score', None)
+
+        return result
+    else:
+        # No ratings yet - pure random
+        return random.sample(all_movies, min(n, len(all_movies)))
+
+
+def get_treatment_recommendations(user_id, n=12, rated_movies=None):
+    """
+    Treatment: LightGCN (with genre personalization)
+
+    Args:
+        user_id: User identifier
+        n: Number of recommendations
+        rated_movies: Dictionary of {movie_id: rating} for personalization
+
+    Returns:
+        List of movie dictionaries
+    """
+    all_movies = dataset.get_all_movies()
+
+    # Filter out already-rated movies
+    if rated_movies:
+        rated_ids = set(int(mid) for mid in rated_movies.keys())
+        candidates = [m for m in all_movies if m['movieId'] not in rated_ids]
+
+        # Extract genre preferences
+        genre_prefs = extract_genre_preferences(rated_movies)
+
+        # Score movies with genre + popularity
+        for movie in candidates:
+            movie['_score'] = score_movie_by_preference(movie, genre_prefs, variant='treatment')
+
+        # Sort by score and return top N
+        candidates.sort(key=lambda m: m['_score'], reverse=True)
+        result = candidates[:n]
+
+        # Clean up temporary score field
+        for m in result:
+            m.pop('_score', None)
+
+        return result
+    else:
+        # No ratings yet - pure popularity
+        movies = dataset.movies.copy()
+        if 'avg_rating' in movies.columns:
+            movies = movies.sort_values('avg_rating', ascending=False)
+        return movies.head(n).to_dict('records')
+
+
+def get_recommendations(user_id, variant, n=12, rated_movies=None):
+    """
+    Get recommendations based on assigned variant (with personalization)
 
     Args:
         user_id: User identifier
         variant: 'control' or 'treatment'
         n: Number of recommendations
+        rated_movies: Dictionary of {movie_id: rating} for personalization
 
     Returns:
         List of movie dictionaries
     """
     if variant == 'treatment':
-        return get_treatment_recommendations(user_id, n)
+        return get_treatment_recommendations(user_id, n, rated_movies)
     else:
-        return get_control_recommendations(user_id, n)
+        return get_control_recommendations(user_id, n, rated_movies)

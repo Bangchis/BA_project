@@ -23,8 +23,8 @@ A complete **Netflix-style movie recommendation system** with built-in **A/B tes
 
 ### 2. A/B Testing Framework
 - ✅ Hash-based variant assignment (50/50 split)
-- ✅ Control variant: Random recommendations
-- ✅ Treatment variant: Popularity-based recommendations
+- ✅ Control variant: Matrix Factorization
+- ✅ Treatment variant: LightGCN
 - ✅ Event logging system (CSV files):
   - Impressions (when recommendations shown)
   - Clicks (when user clicks movie)

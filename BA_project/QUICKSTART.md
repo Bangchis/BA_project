@@ -40,8 +40,8 @@ Open your browser and go to:
 
 ### B. Browse Recommendations
 1. After login, you'll see 12 movie recommendations
-2. **Control users** see random movies
-3. **Treatment users** see popular movies (by rating)
+2. **Control users** see Matrix Factorization recommendations
+3. **Treatment users** see LightGCN recommendations
 
 ### C. Interact with Movies
 1. Click any movie card → Opens detail modal

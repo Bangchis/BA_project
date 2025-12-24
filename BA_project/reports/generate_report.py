@@ -198,8 +198,8 @@ def generate_html_report():
         <div class="section">
             <h2>Executive Summary</h2>
             <p>
-                This A/B test evaluated two recommendation algorithms: <strong>Control (Random)</strong> vs
-                <strong>Treatment (Popularity-based)</strong>. The test ran with {total_users} users
+                This A/B test evaluated two recommendation algorithms: <strong>Control (Matrix Factorization)</strong> vs
+                <strong>Treatment (LightGCN)</strong>. The test ran with {total_users} users
                 generating {total_impressions} impressions, {total_clicks} clicks, and {total_conversions} conversions.
             </p>
 
@@ -234,8 +234,8 @@ def generate_html_report():
                 <thead>
                     <tr>
                         <th>Metric</th>
-                        <th><span class="control-badge">CONTROL</span> Random</th>
-                        <th><span class="treatment-badge">TREATMENT</span> Popularity</th>
+                        <th><span class="control-badge">CONTROL</span> Matrix Factorization</th>
+                        <th><span class="treatment-badge">TREATMENT</span> LightGCN</th>
                         <th>Lift</th>
                     </tr>
                 </thead>
@@ -315,10 +315,10 @@ def generate_html_report():
                 Based on the test results:
             </p>
             <ul style="line-height: 2;">
-                {'<li><strong>Launch Treatment:</strong> Popularity-based recommendations show improvement in key metrics.</li>' if lift['ctr'] > 10 and lift['cvr'] > 0 else ''}
-                {'<li><strong>Iterate:</strong> Results are inconclusive. Consider running a longer test or trying different algorithms.</li>' if lift['ctr'] < 10 and lift['ctr'] > -10 else ''}
-                {'<li><strong>Keep Control:</strong> Treatment variant did not improve metrics. Maintain current random recommendations.</li>' if lift['ctr'] < -5 else ''}
-                <li><strong>Next Steps:</strong> Consider testing more sophisticated algorithms (collaborative filtering, LightGCN)</li>
+                {'<li><strong>Launch Treatment:</strong> LightGCN shows improvement in key metrics. Deploy to production.</li>' if lift['ctr'] > 10 and lift['cvr'] > 0 else ''}
+                {'<li><strong>Iterate:</strong> Results are inconclusive. Consider running a longer test or trying different hyperparameters.</li>' if lift['ctr'] < 10 and lift['ctr'] > -10 else ''}
+                {'<li><strong>Keep Control:</strong> Treatment variant did not improve metrics. Maintain Matrix Factorization.</li>' if lift['ctr'] < -5 else ''}
+                <li><strong>Next Steps:</strong> Consider testing deeper GNN architectures (NGCF, PinSage)</li>
                 <li><strong>Sample Size:</strong> Collect more data to increase statistical power (current: {total_impressions} impressions)</li>
             </ul>
         </div>

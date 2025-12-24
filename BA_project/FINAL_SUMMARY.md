@@ -22,8 +22,8 @@
 
 ### 📊 **Complete A/B Testing Framework**
 - Hash-based variant assignment (50/50 split)
-- Control: Random recommendations
-- Treatment: Popularity-based recommendations
+- Control: Matrix Factorization
+- Treatment: LightGCN
 - Event logging: Impressions, Clicks, Conversions, Engagement, Performance
 - Real-time dashboard with auto-refresh
 - Metrics: CTR, CVR, Lift, Dwell Time, API Latency

@@ -58,6 +58,7 @@
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         gap: 1rem;
         padding: 0 4rem;
+        transition: opacity 0.3s ease;
     }
 
     @media (max-width: 768px) {
@@ -179,10 +180,15 @@
                 return;
             }
 
-            // Update variant info
-            const variantText = data.variant === 'treatment'
-                ? 'Treatment variant (Popularity-based recommendations)'
-                : 'Control variant (Random recommendations)';
+            // Update variant info with personalization status
+            let variantText = data.variant === 'treatment'
+                ? 'Treatment variant (LightGCN)'
+                : 'Control variant (Matrix Factorization)';
+
+            if (data.personalized) {
+                variantText += ` • ✨ Personalized (${data.num_ratings} ratings)`;
+            }
+
             document.getElementById('variantInfo').textContent = variantText;
 
             // Render movie cards
@@ -348,6 +354,27 @@
                 await logDwellTime('rate');
 
                 document.getElementById('movieModal').classList.add('hidden');
+
+                // Auto-refresh recommendations if backend signals to do so
+                if (data.should_refresh) {
+                    showToast('Updating recommendations based on your ratings...', 'info');
+
+                    // Clear current recommendations with fade effect
+                    const grid = document.getElementById('recommendationsGrid');
+                    grid.style.opacity = '0.3';
+
+                    // Wait for fade effect
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
+                    // Clear grid and reload recommendations
+                    grid.innerHTML = '';
+                    await loadRecommendations();
+
+                    // Fade back in
+                    grid.style.opacity = '1';
+
+                    showToast(`Recommendations updated! (${data.num_ratings} ratings)`, 'success');
+                }
             } else {
                 showToast(data.error || 'Rating failed', 'error');
             }
