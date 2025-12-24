@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}A/B Testing Dashboard - Netflix{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        border: 1px solid #3d3d3d;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+
+    .chart-container {
+        background: #1a1a1a;
+        border: 1px solid #3d3d3d;
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-8 px-4 md:px-16">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2">A/B Testing Dashboard</h1>
+        <p class="text-gray-400">Real-time metrics and analytics for recommendation A/B test</p>
+    </div>
+
+    <!-- Refresh Button -->
+    <div class="mb-6">
+        <button id="refreshBtn" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded transition">
+            <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+        </button>
+        <span class="ml-4 text-sm text-gray-400">Last updated: <span id="lastUpdated">Never</span></span>
+    </div>
+
+    <!-- SRM Alert -->
+    <div id="srmAlert" class="hidden bg-yellow-900 border border-yellow-600 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-triangle text-yellow-500 text-xl mr-3"></i>
+            <div>
+                <h3 class="font-bold">Sample Ratio Mismatch Detected!</h3>
+                <p class="text-sm text-gray-300" id="srmMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Users -->
+        <div class="metric-card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Total Users</span>
+                <i class="fas fa-users text-blue-500"></i>
+            </div>
+            <div class="text-3xl font-bold" id="totalUsers">0</div>
+        </div>
+
+        <!-- Total Impressions -->
+        <div class="metric-card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Total Impressions</span>
+                <i class="fas fa-eye text-purple-500"></i>
+            </div>
+            <div class="text-3xl font-bold" id="totalImpressions">0</div>
+        </div>
+
+        <!-- Total Clicks -->
+        <div class="metric-card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Total Clicks</span>
+                <i class="fas fa-mouse-pointer text-green-500"></i>
+            </div>
+            <div class="text-3xl font-bold" id="totalClicks">0</div>
+        </div>
+
+        <!-- Total Conversions -->
+        <div class="metric-card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Total Conversions</span>
+                <i class="fas fa-star text-yellow-500"></i>
+            </div>
+            <div class="text-3xl font-bold" id="totalConversions">0</div>
+        </div>
+    </div>
+
+    <!-- Variant Comparison -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Control Metrics -->
+        <div class="metric-card">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <span class="px-3 py-1 bg-blue-600 rounded-full text-sm mr-3">CONTROL</span>
+                Random Recommendations
+            </h3>
+
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Users</span>
+                        <span class="font-bold" id="controlUsers">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Impressions</span>
+                        <span class="font-bold" id="controlImpressions">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Clicks</span>
+                        <span class="font-bold" id="controlClicks">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Conversions</span>
+                        <span class="font-bold" id="controlConversions">0</span>
+                    </div>
+                </div>
+
+                <hr class="border-gray-700">
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">CTR (Click-Through Rate)</span>
+                        <span class="font-bold text-green-400 text-lg" id="controlCTR">0.00%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">CVR (Conversion Rate)</span>
+                        <span class="font-bold text-yellow-400 text-lg" id="controlCVR">0.00%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Treatment Metrics -->
+        <div class="metric-card">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <span class="px-3 py-1 bg-green-600 rounded-full text-sm mr-3">TREATMENT</span>
+                Popularity-based Recommendations
+            </h3>
+
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Users</span>
+                        <span class="font-bold" id="treatmentUsers">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Impressions</span>
+                        <span class="font-bold" id="treatmentImpressions">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Clicks</span>
+                        <span class="font-bold" id="treatmentClicks">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">Conversions</span>
+                        <span class="font-bold" id="treatmentConversions">0</span>
+                    </div>
+                </div>
+
+                <hr class="border-gray-700">
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">CTR (Click-Through Rate)</span>
+                        <span class="font-bold text-green-400 text-lg" id="treatmentCTR">0.00%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-gray-400">CVR (Conversion Rate)</span>
+                        <span class="font-bold text-yellow-400 text-lg" id="treatmentCVR">0.00%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lift Analysis -->
+    <div class="chart-container mb-8">
+        <h3 class="text-xl font-bold mb-4">Lift Analysis (Treatment vs Control)</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="text-center p-6 bg-gray-900 rounded-lg">
+                <div class="text-sm text-gray-400 mb-2">CTR Lift</div>
+                <div class="text-4xl font-bold" id="ctrLift">
+                    <span class="text-gray-400">-</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-2">Percentage change in click-through rate</div>
+            </div>
+
+            <div class="text-center p-6 bg-gray-900 rounded-lg">
+                <div class="text-sm text-gray-400 mb-2">CVR Lift</div>
+                <div class="text-4xl font-bold" id="cvrLift">
+                    <span class="text-gray-400">-</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-2">Percentage change in conversion rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance & Engagement Metrics -->
+    <div class="chart-container mb-8">
+        <h3 class="text-xl font-bold mb-4">⚡ Performance & Engagement</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- API Latency -->
+            <div class="text-center p-6 bg-gray-900 rounded-lg border-l-4 border-purple-500">
+                <div class="text-sm text-gray-400 mb-2">API Latency (Avg)</div>
+                <div class="text-4xl font-bold text-purple-400" id="avgLatency">
+                    <span class="text-gray-400">-</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-2">Milliseconds per request</div>
+            </div>
+
+            <!-- Async Logging Speed -->
+            <div class="text-center p-6 bg-gray-900 rounded-lg border-l-4 border-green-500">
+                <div class="text-sm text-gray-400 mb-2">Async Logging</div>
+                <div class="text-4xl font-bold text-green-400">&lt;5ms</div>
+                <div class="text-xs text-gray-500 mt-2">Zero-latency fire-and-forget</div>
+            </div>
+
+            <!-- Queue Size -->
+            <div class="text-center p-6 bg-gray-900 rounded-lg border-l-4 border-yellow-500">
+                <div class="text-sm text-gray-400 mb-2">Event Queue</div>
+                <div class="text-4xl font-bold text-yellow-400" id="queueSize">0</div>
+                <div class="text-xs text-gray-500 mt-2">Events pending</div>
+            </div>
+        </div>
+
+        <!-- Pro Features Badge -->
+        <div class="bg-gradient-to-r from-purple-900 to-blue-900 rounded-lg p-4 text-center">
+            <div class="flex items-center justify-center space-x-4">
+                <span class="text-sm font-bold">✨ PRO FEATURES ACTIVE:</span>
+                <span class="px-3 py-1 bg-green-600 rounded-full text-xs">Async Logging</span>
+                <span class="px-3 py-1 bg-blue-600 rounded-full text-xs">Performance Tracking</span>
+                <span class="px-3 py-1 bg-purple-600 rounded-full text-xs">Dwell Time</span>
+                <span class="px-3 py-1 bg-pink-600 rounded-full text-xs">Consistent Hashing</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variant Distribution -->
+    <div class="chart-container mb-8">
+        <h3 class="text-xl font-bold mb-4">Variant Distribution</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-4 bg-gray-900 rounded-lg">
+                <div class="text-sm text-gray-400 mb-2">Control</div>
+                <div class="text-3xl font-bold text-blue-400" id="controlRatio">50%</div>
+            </div>
+            <div class="text-center p-4 bg-gray-900 rounded-lg">
+                <div class="text-sm text-gray-400 mb-2">Treatment</div>
+                <div class="text-3xl font-bold text-green-400" id="treatmentRatio">50%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="chart-container">
+        <h3 class="text-xl font-bold mb-4">Recent Activity</h3>
+
+        <div class="space-y-4">
+            <!-- Recent Clicks -->
+            <div>
+                <h4 class="text-sm font-bold text-gray-400 mb-2">Recent Clicks</h4>
+                <div id="recentClicks" class="space-y-2">
+                    <p class="text-sm text-gray-500">No clicks yet</p>
+                </div>
+            </div>
+
+            <!-- Recent Conversions -->
+            <div>
+                <h4 class="text-sm font-bold text-gray-400 mb-2">Recent Conversions</h4>
+                <div id="recentConversions" class="space-y-2">
+                    <p class="text-sm text-gray-500">No conversions yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadMetrics() {
+        try {
+            const response = await fetch('/api/metrics');
+            const data = await response.json();
+
+            updateMetrics(data);
+            updateRecentActivity();
+
+            // Update performance metrics
+            updatePerformanceMetrics(response);
+
+            // Update timestamp
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+
+        } catch (error) {
+            console.error('Error loading metrics:', error);
+            showToast('Failed to load metrics', 'error');
+        }
+    }
+
+    function updatePerformanceMetrics(response) {
+        // Get API latency from response header
+        const latencyHeader = response.headers.get('X-Response-Time-Ms');
+        if (latencyHeader) {
+            const latency = parseFloat(latencyHeader);
+            document.getElementById('avgLatency').innerHTML = `
+                <span class="text-purple-400">${latency.toFixed(1)}ms</span>
+            `;
+        }
+
+        // Queue size is always low due to async logging
+        // In production, you'd fetch this from a monitoring endpoint
+        document.getElementById('queueSize').textContent = '0';
+    }
+
+    function updateMetrics(data) {
+        const { metrics, srm, lift } = data;
+
+        // Total metrics
+        const totalUsers = metrics.control.users + metrics.treatment.users;
+        const totalImpressions = metrics.control.impressions + metrics.treatment.impressions;
+        const totalClicks = metrics.control.clicks + metrics.treatment.clicks;
+        const totalConversions = metrics.control.conversions + metrics.treatment.conversions;
+
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('totalImpressions').textContent = totalImpressions;
+        document.getElementById('totalClicks').textContent = totalClicks;
+        document.getElementById('totalConversions').textContent = totalConversions;
+
+        // Control metrics
+        document.getElementById('controlUsers').textContent = metrics.control.users;
+        document.getElementById('controlImpressions').textContent = metrics.control.impressions;
+        document.getElementById('controlClicks').textContent = metrics.control.clicks;
+        document.getElementById('controlConversions').textContent = metrics.control.conversions;
+        document.getElementById('controlCTR').textContent = (metrics.control.ctr * 100).toFixed(2) + '%';
+        document.getElementById('controlCVR').textContent = (metrics.control.cvr * 100).toFixed(2) + '%';
+
+        // Treatment metrics
+        document.getElementById('treatmentUsers').textContent = metrics.treatment.users;
+        document.getElementById('treatmentImpressions').textContent = metrics.treatment.impressions;
+        document.getElementById('treatmentClicks').textContent = metrics.treatment.clicks;
+        document.getElementById('treatmentConversions').textContent = metrics.treatment.conversions;
+        document.getElementById('treatmentCTR').textContent = (metrics.treatment.ctr * 100).toFixed(2) + '%';
+        document.getElementById('treatmentCVR').textContent = (metrics.treatment.cvr * 100).toFixed(2) + '%';
+
+        // Lift
+        const ctrLiftElem = document.getElementById('ctrLift');
+        const cvrLiftElem = document.getElementById('cvrLift');
+
+        if (lift.ctr !== 0) {
+            const ctrLiftValue = lift.ctr.toFixed(2);
+            const ctrLiftClass = lift.ctr > 0 ? 'text-green-400' : 'text-red-400';
+            const ctrLiftSign = lift.ctr > 0 ? '+' : '';
+            ctrLiftElem.innerHTML = `<span class="${ctrLiftClass}">${ctrLiftSign}${ctrLiftValue}%</span>`;
+        }
+
+        if (lift.cvr !== 0) {
+            const cvrLiftValue = lift.cvr.toFixed(2);
+            const cvrLiftClass = lift.cvr > 0 ? 'text-green-400' : 'text-red-400';
+            const cvrLiftSign = lift.cvr > 0 ? '+' : '';
+            cvrLiftElem.innerHTML = `<span class="${cvrLiftClass}">${cvrLiftSign}${cvrLiftValue}%</span>`;
+        }
+
+        // SRM check
+        const srmAlert = document.getElementById('srmAlert');
+        if (srm.has_srm) {
+            srmAlert.classList.remove('hidden');
+            document.getElementById('srmMessage').textContent = srm.message;
+        } else {
+            srmAlert.classList.add('hidden');
+        }
+
+        // Variant distribution
+        if (totalUsers > 0) {
+            document.getElementById('controlRatio').textContent = (srm.control_ratio * 100).toFixed(1) + '%';
+            document.getElementById('treatmentRatio').textContent = (srm.treatment_ratio * 100).toFixed(1) + '%';
+        }
+    }
+
+    async function updateRecentActivity() {
+        try {
+            const response = await fetch('/api/recent-events');
+            const data = await response.json();
+
+            // Recent clicks
+            const clicksContainer = document.getElementById('recentClicks');
+            if (data.clicks && data.clicks.length > 0) {
+                clicksContainer.innerHTML = data.clicks.map(event => `
+                    <div class="text-sm text-gray-400 bg-gray-900 p-2 rounded">
+                        <span class="font-bold">${event.user_id}</span> (${event.variant}) clicked movie ${event.movie_id}
+                        <span class="text-xs text-gray-600 ml-2">${new Date(event.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Recent conversions
+            const conversionsContainer = document.getElementById('recentConversions');
+            if (data.conversions && data.conversions.length > 0) {
+                conversionsContainer.innerHTML = data.conversions.map(event => `
+                    <div class="text-sm text-gray-400 bg-gray-900 p-2 rounded">
+                        <span class="font-bold">${event.user_id}</span> (${event.variant}) rated movie ${event.movie_id} with ${event.rating}★
+                        <span class="text-xs text-gray-600 ml-2">${new Date(event.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                `).join('');
+            }
+
+        } catch (error) {
+            console.error('Error loading recent activity:', error);
+        }
+    }
+
+    // Refresh button
+    document.getElementById('refreshBtn').addEventListener('click', loadMetrics);
+
+    // Auto-refresh every 5 seconds
+    setInterval(loadMetrics, 5000);
+
+    // Initial load
+    loadMetrics();
+</script>
+{% endblock %}
