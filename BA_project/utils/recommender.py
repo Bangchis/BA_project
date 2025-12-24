@@ -170,6 +170,146 @@ class MovieDataset:
                 'avg_rating': 3.6,
                 'poster_url': 'https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg'
             },
+            {
+                'movieId': 21,
+                'title': 'Spirited Away (2001)',
+                'genres': 'Animation|Adventure|Fantasy',
+                'avg_rating': 4.3,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg'
+            },
+            {
+                'movieId': 22,
+                'title': 'The Silence of the Lambs (1991)',
+                'genres': 'Crime|Drama|Thriller',
+                'avg_rating': 4.2,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/uS9m8OBk1A8eM9I042bx8XXpqAq.jpg'
+            },
+            {
+                'movieId': 23,
+                'title': 'Get Out (2017)',
+                'genres': 'Horror|Mystery|Thriller',
+                'avg_rating': 3.9,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/tFXcEccSQMf3lfhfXKSU9iRBpa3.jpg'
+            },
+            {
+                'movieId': 24,
+                'title': 'The Prestige (2006)',
+                'genres': 'Drama|Mystery|Thriller',
+                'avg_rating': 4.0,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/bdN3gXuIZYaJP7ftKK2sU0nPtEA.jpg'
+            },
+            {
+                'movieId': 25,
+                'title': 'Toy Story (1995)',
+                'genres': 'Animation|Comedy|Family',
+                'avg_rating': 4.1,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg'
+            },
+            {
+                'movieId': 26,
+                'title': 'The Social Network (2010)',
+                'genres': 'Drama',
+                'avg_rating': 3.8,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/n0ybibhJtQ5icDqTp8eRytcIHJx.jpg'
+            },
+            {
+                'movieId': 27,
+                'title': 'Blade Runner 2049 (2017)',
+                'genres': 'Sci-Fi|Thriller',
+                'avg_rating': 3.9,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg'
+            },
+            {
+                'movieId': 28,
+                'title': 'Arrival (2016)',
+                'genres': 'Drama|Sci-Fi',
+                'avg_rating': 3.8,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg'
+            },
+            {
+                'movieId': 29,
+                'title': 'Mad Max: Fury Road (2015)',
+                'genres': 'Action|Adventure|Sci-Fi',
+                'avg_rating': 4.0,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/hA2ple9q4qnwxp3hKVNhroipsir.jpg'
+            },
+            {
+                'movieId': 30,
+                'title': 'The Truman Show (1998)',
+                'genres': 'Comedy|Drama|Sci-Fi',
+                'avg_rating': 4.0,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/vuza0WqY239yBXOadKlGwJsZJFE.jpg'
+            },
+            {
+                'movieId': 31,
+                'title': 'Coco (2017)',
+                'genres': 'Animation|Family|Fantasy',
+                'avg_rating': 4.2,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/gGEsBPAijhVUFoiNpgZXqRVWJt2.jpg'
+            },
+            {
+                'movieId': 32,
+                'title': 'A Quiet Place (2018)',
+                'genres': 'Drama|Horror|Sci-Fi',
+                'avg_rating': 3.7,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/nAU74GmpUk7t5iklEp3bufwDq4n.jpg'
+            },
+            {
+                'movieId': 33,
+                'title': 'Eternal Sunshine of the Spotless Mind (2004)',
+                'genres': 'Drama|Romance|Sci-Fi',
+                'avg_rating': 4.0,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/5MwkWH9tYHv3mV9OdYTMR5qreIz.jpg'
+            },
+            {
+                'movieId': 34,
+                'title': 'The Wolf of Wall Street (2013)',
+                'genres': 'Comedy|Crime|Drama',
+                'avg_rating': 3.9,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzYd4MrX.jpg'
+            },
+            {
+                'movieId': 35,
+                'title': 'Shutter Island (2010)',
+                'genres': 'Drama|Mystery|Thriller',
+                'avg_rating': 3.9,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/4GDy0PHYX3VRXUtwK5ysFbg3kEx.jpg'
+            },
+            {
+                'movieId': 36,
+                'title': 'Knives Out (2019)',
+                'genres': 'Comedy|Crime|Mystery',
+                'avg_rating': 3.8,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/pThyQovXQrw2m0s9x82twj48Jq4.jpg'
+            },
+            {
+                'movieId': 37,
+                'title': 'The Conjuring (2013)',
+                'genres': 'Horror|Mystery|Thriller',
+                'avg_rating': 3.7,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/wVYREutTvI2tmxr6ujrHT704wGF.jpg'
+            },
+            {
+                'movieId': 38,
+                'title': 'Hereditary (2018)',
+                'genres': 'Drama|Horror|Mystery',
+                'avg_rating': 3.6,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/p4gPDs7MbJa5Wi3TMqbhA76xIVT.jpg'
+            },
+            {
+                'movieId': 39,
+                'title': 'The Lighthouse (2019)',
+                'genres': 'Drama|Horror|Mystery',
+                'avg_rating': 3.5,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/3nk9UoepYmv1G9oP18q6JJCeYwN.jpg'
+            },
+            {
+                'movieId': 40,
+                'title': 'Soul (2020)',
+                'genres': 'Animation|Comedy|Drama|Fantasy',
+                'avg_rating': 4.1,
+                'poster_url': 'https://image.tmdb.org/t/p/w500/hm58Jw4Lw8OIeECIq5qyPYhAeRJ.jpg'
+            },
         ]
         return pd.DataFrame(sample_movies)
 

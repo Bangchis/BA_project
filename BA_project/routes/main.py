@@ -49,7 +49,7 @@ def recommendations():
         return jsonify({'error': 'Please login first'}), 401
 
     # Get personalized recommendations (filters out rated movies)
-    recs = get_recommendations(user_id, variant, n=12, rated_movies=rated_movies)
+    recs = get_recommendations(user_id, variant, n=24, rated_movies=rated_movies)
 
     # Log impression
     movie_ids = [movie['movieId'] for movie in recs]
